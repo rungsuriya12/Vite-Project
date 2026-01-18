@@ -4,59 +4,52 @@ function Item() {
 
     const mockDocs = [
         {
-            id: 1,
-            docNo: "15-20250117",
-            requester: "Rungsuriya",
-            reason: "สั่งซื้ออุปกรณ์สำนักงาน",
-            price: 800000,
-            detail: "dustry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularise 1",
+            contract_id: "SPP1234",
+            name: "Rungsuriya",
+            loanAmountRaw: 800000,
+            detail: "ไมเขาเงอนไขการขอสินเชื่อ",
         },
-        {
-            id: 2,
-            docNo: "15-20250118",
-            requester: "Somchai",
-            reason: "ซ่อมบำรุงระบบ",
-            price: 120000,
-            detail: "รายละเอียดเอกสารรายการที่ 2",
-        },
-        {
-            id: 3,
-            docNo: "15-20250119",
-            requester: "Somsri",
-            reason: "จัดซื้อซอฟต์แวร์",
-            price: 45000,
-            detail: "รายละเอียดเอกสารรายการที่ 3",
-        },
+                {
+            contract_id: "SPP1234",
+            name: "Rungsuriya",
+            loanAmountRaw: 800000,
+            detail: "ไมเขาเงอนไขการขอสินเชื่อ",
+        }
     ];
     const navigate = useNavigate();
 
     return (
         <div class="min-h-screen bg-gray-50">
-            <div class="mx-auto max-w-6xl px-4 bg-white pt-20 min-h-screen">
+            <div class="mx-auto max-w-6xl px-4 bg-white pt-20 min-h-215">
 
-                   <h1 className="text-lg "> Appication For Request Training</h1> <br />
+                <h1 className="text-lg "> รายการขอสินเชื่อ</h1>
+                <hr className="my-3" />
                 <div className="space-y-2">
 
                     {mockDocs.map((item) => (
                         <div onClick={() => navigate(`/View/${item.id}`)} className="rounded-md border border-gray-300 bg-white shadow-sm">
                             {/* Header */}
-                            <div className="rounded-t-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white ">
-                                DocNo. {item.docNo}
+                            <div className="rounded-t-md bg-green-500  px-4 py-2 text-sm font-medium text-white ">
+                               <p className="ml-1">DocNo. {item.contract_id}</p> 
                             </div>
 
                             {/* Body */}
-                            <div className="px-4 py-3">
-                                <div className="flex items-start justify-between">
+                            <div className=" ml-2 mr-2 px-4 py-3">
+                                <div className="  flex items-start items-center justify-between">
 
                                     {/* Left content */}
                                     <div className="space-y-1 text-sm text-gray-700">
-                                        <p><span className="font-medium">Requested:</span> {item.requester}</p>
-                                        <p><span className="font-medium">Reason:</span> {item.reason}</p>
-                                        <p><span className="font-medium">Price:</span> {item.price}</p>
+                                        <p><span className="font-medium">Requested:</span> {item.name}</p>
+                                        <p><span className="font-medium">Monthly Income:</span> {item.loanAmountRaw}</p>
+                                        <p><span className="font-medium">Loan Amount:</span> {item.loanAmountRaw}</p>
                                     </div>
 
+                                    {/* Right center */}
+                                    <h1 className="text-3xl mt-3 font-semibold text-green-500"> Approve </h1>
+
+
                                     {/* Right button */}
-                                    <button onClick={() => navigate(`/View/${item.id}`)} className="mt-5 rounded-md border px-4 py-1.5 text-sm hover:bg-gray-100">
+                                    <button onClick={() => navigate(`/View/${item.id}`)} className="mt-5  mr-1 rounded-md border px-4 py-1.5  text-sm hover:bg-gray-100">
                                         View
                                     </button>
                                 </div>
