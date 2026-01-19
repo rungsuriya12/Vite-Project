@@ -22,7 +22,7 @@ export default function Navbar() {
       </div>
       <div class="flex flex-1 items-center  sm:items-stretch sm:justify-start">
         <div class="flex shrink-0 items-center">
-          <img src="Logo.png" alt="Your Company" class="h-12 w-auto" />
+          <img src="Logo.png" alt="" class="h-12 w-auto" />
         </div>
         
         <div class="hidden sm:block mx-auto">

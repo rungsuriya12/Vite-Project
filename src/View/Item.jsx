@@ -1,21 +1,29 @@
 import React from 'react'
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 function Item() {
+const [result, setResult] = useState([]);
 
-    const mockDocs = [
-        {
-            contract_id: "SPP1234",
-            name: "Rungsuriya",
-            loanAmountRaw: 800000,
-            detail: "ไมเขาเงอนไขการขอสินเชื่อ",
-        },
-                {
-            contract_id: "SPP1234",
-            name: "Rungsuriya",
-            loanAmountRaw: 800000,
-            detail: "ไมเขาเงอนไขการขอสินเชื่อ",
-        }
-    ];
+const decisionColor = {
+  APPROVE: 'text-green-500',
+  REJECTED: 'text-red-500',
+  PENDING: 'text-yellow-500',
+};
+
+
+const requestOptions = {
+  method: "GET",
+  redirect: "follow"
+};
+useEffect(() => {
+  fetch("http://localhost:3000/api/loans")
+    .then(res => res.json())
+    .then(data => setResult(data))
+    .catch(err => console.error(err))
+}, []);
+
+console.log(result);
+  
     const navigate = useNavigate();
 
     return (
@@ -26,8 +34,9 @@ function Item() {
                 <hr className="my-3" />
                 <div className="space-y-2">
 
-                    {mockDocs.map((item) => (
-                        <div onClick={() => navigate(`/View/${item.id}`)} className="rounded-md border border-gray-300 bg-white shadow-sm">
+                    {result?.map(item => (
+                        <div key={item.id}>
+                        <div onClick={() => navigate(`/View/${item.id[0]}`)} className="rounded-md border border-gray-300 bg-white shadow-sm">
                             {/* Header */}
                             <div className="rounded-t-md bg-green-500  px-4 py-2 text-sm font-medium text-white ">
                                <p className="ml-1">DocNo. {item.contract_id}</p> 
@@ -40,17 +49,17 @@ function Item() {
                                     {/* Left content */}
                                     <div className="space-y-1 text-sm text-gray-700">
                                         <p><span className="font-medium">Requested:</span> {item.name}</p>
-                                        <p><span className="font-medium">Monthly Income:</span> {item.loanAmountRaw}</p>
-                                        <p><span className="font-medium">Loan Amount:</span> {item.loanAmountRaw}</p>
+                                        <p><span className="font-medium">Monthly Income:</span> {item.monthly_income}</p>
+                                        <p><span className="font-medium">Loan Amount:</span> {item.loan_amount}</p>
                                     </div>
 
                                     {/* Right center */}
-                                    <h1 className="text-3xl mt-3 font-semibold text-green-500"> Approve </h1>
+                                    <h1 className={`text-3xl mt-3 font-semibold ${decisionColor[item.decision]}`}> {item.decision} </h1>
 
 
                                     {/* Right button */}
-                                    <button onClick={() => navigate(`/View/${item.id}`)} className="mt-5  mr-1 rounded-md border px-4 py-1.5  text-sm hover:bg-gray-100">
-                                        View
+                                    <button onClick={() => navigate(`/View/${item.id[0]}`)} className="mt-5  mr-1 rounded-md border px-4 py-1.5  text-sm hover:bg-gray-100">
+                                        View 
                                     </button>
                                 </div>
 
@@ -59,11 +68,12 @@ function Item() {
 
                                 {/* Detail */}
                                 <p className="text-xs text-gray-600">
-                                    {item.detail}
+                                    {item.reason_codes}
                                 </p>
                             </div>
                         </div>
-                    ))}
+                         </div>
+                   ))}
 
 
                 </div>

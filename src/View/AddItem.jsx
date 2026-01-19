@@ -1,6 +1,9 @@
 import React from 'react'
 import useState from 'react'
+import { useNavigate } from "react-router-dom";
+
 function AddItem() {
+    const navigate = useNavigate();
     const resetForm = () => {
         setCustomerId("");
         setIdCard("");
@@ -18,7 +21,7 @@ function AddItem() {
     const [name, setName] = React.useState("");
     const [lastname, setLastname] = React.useState("");
     const [errors, setErrors] = React.useState({});
-    
+
     const Submit = (e) => {
         e.preventDefault();
         const newErrors = {};
@@ -36,18 +39,56 @@ function AddItem() {
         // ❌ มี error → หยุด
         if (Object.keys(newErrors).length > 0) return;
 
-        const DataCredit = {
-            customerId,
-            idCard,
-            name,
-            lastname,
-            loanAmountRaw,
-            monthlyIncomeRaw,
+        // ส่งข้อมูลไปยัง backend
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+            "user_id": customerId,
+            "citizen_id": idCard,
+            "name": name,
+            "lastname": lastname,
+            "monthly_income": monthlyIncomeRaw,
+            "loan_amount": loanAmountRaw
+        });
+
+        const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
         };
 
-        console.log("ส่งข้อมูล", DataCredit);
+        fetch("http://localhost:3000/api/loans", requestOptions)
+            .then(async (response) => {
+                if (response.status === 409) {
+                    // ข้อมูลซ้ำ
+                    throw new Error("DUPLICATE");
+                }
+
+                if (!response.ok) {
+                    // error อื่น ๆ
+                    throw new Error("SERVER_ERROR");
+                }
+
+                return response.json();
+            })
+            .then(result => {
+                alert("สมัครสินเชื่อเรียบร้อยแล้ว");
+                resetForm();
+                navigate('/item');
+            })
+            .catch(err => {
+                console.error(err);
+
+                if (err.message === "DUPLICATE") {
+                    alert("ข้อมูลซ้ำ ไม่สามารถบันทึกได้");
+                } 
+            });
+
 
     };
+
 
     //console.log(errors.onlyLetters2);
     const [monthlyIncome, setMonthlyIncome] = React.useState("");   // แสดงผล: 10,000
@@ -240,7 +281,7 @@ function AddItem() {
                                         onClick={resetForm} className="w-full rounded-md border border-gray-300 bg-white py-3 text-sm font-medium text-gray-700 hover:bg-gray-100" >
                                         ล้างข้อมูล
                                     </button>
-                                    <button disabled={!isPassed} type="submit" className={`w-full rounded-md py-3 text-sm font-medium ${isPassed? "bg-green-600 text-white hover:bg-green-700": "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                                    <button disabled={!isPassed} type="submit" className={`w-full rounded-md py-3 text-sm font-medium ${isPassed ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
                                     >
                                         ยืนยัน
                                     </button>
