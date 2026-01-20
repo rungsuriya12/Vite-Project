@@ -5,63 +5,67 @@ import Item from './Item';
 import { useNavigate } from "react-router-dom";
 
 function View() {
-const navigate = useNavigate();
-const [result, setResult] = useState(null);
-const { id } = useParams();
-console.log(result);
+    const [Approval, setApproval] = useState(null);
+    const navigate = useNavigate();
+    const [result, setResult] = useState(null);
+    const { id } = useParams();
+    console.log(result);
 
-const myHeaders = new Headers();
-myHeaders.append("Content-Type", "application/json");
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
 
-const raw = "";
+    const raw = "";
 
-const requestOptions = {
-  method: "GET",
-  headers: myHeaders,
-  body: raw,
-  redirect: "follow"
-};
-  useEffect(() => {
-    if (!id) return;
+    const requestOptions = {
+        method: "GET",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+    };
+    useEffect(() => {
+        if (!id) return;
 
-    fetch(`http://localhost:3000/api/loans/${id}`)
-      .then(res => res.json())
-      .then(result => setResult(result))
-      .catch(err => console.error(err));
-  }, [id]);
+        fetch(`http://localhost:3000/api/loans/${id}`)
+            .then(res => res.json())
+            .then(result => setResult(result))
+            .catch(err => console.error(err));
+    }, [id]);
 
 
-useEffect(() => {
-  if (!result) return;
+    useEffect(() => {
+        if (!result) return;
 
-  setCustomerId(result.user_id);
-  setIdCard(result.citizen_id);
-  setName(result.name);
-  setLastname(result.lastname);
-  setLoanAmount(result.loan_amount);
-  setLoanAmountRaw(result.loan_amount);
-  setMonthlyIncome(result.monthly_income);
-  setMonthlyIncomeRaw(result.monthly_income);
-}, [result]);
+        setCustomerId(result.user_id);
+        setIdCard(result.citizen_id);
+        setName(result.name);
+        setLastname(result.lastname);
+        setLoanAmount(result.loan_amount);
+        setLoanAmountRaw(result.loan_amount);
+        setMonthlyIncome(result.monthly_income);
+        setMonthlyIncomeRaw(result.monthly_income);
+        setStatuss(result.decision);
+        setApprovedAmount(result.approved_amount);
+        setReasonCodes(result.reason_codes);
+    }, [result]);
+    const [approved_amount, setApprovedAmount] = React.useState("");
+    const [reason_codes, setReasonCodes] = React.useState("");
 
+    const [Statuss, setStatuss] = React.useState("");
     const [customerId, setCustomerId] = React.useState("");
     const [idCard, setIdCard] = React.useState("");
     const [name, setName] = React.useState("");
     const [lastname, setLastname] = React.useState("");
     const [errors, setErrors] = React.useState({});
 
+    //loanApprove
+    //Detail
+    //Approval
+
     const Submit = (e) => {
+
+
         e.preventDefault();
         const newErrors = {};
-
-        if (customerId.length !== 6) {
-            newErrors.customerId = true;
-        }
-
-        if (idCard.length !== 13) {
-            newErrors.idCard = true;
-        }
-
         setErrors(newErrors);
 
         // ❌ มี error → หยุด
@@ -70,35 +74,29 @@ useEffect(() => {
         // ส่งข้อมูลไปยัง backend
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
-
         const raw = JSON.stringify({
-            "user_id": customerId,
-            "citizen_id": idCard,
-            "name": name,
-            "lastname": lastname,
-            "monthly_income": monthlyIncomeRaw,
-            "loan_amount": loanAmountRaw
+            "decision": Approval,
+            "approved_amount": loanApprove,
+            "reason_codes": Detail
         });
 
         const requestOptions = {
-            method: "POST",
+            method: "PUT",
             headers: myHeaders,
             body: raw,
             redirect: "follow"
         };
 
-        fetch("http://localhost:3000/api/loans", requestOptions)
+        fetch(`http://localhost:3000/api/loans/${result.id[0]}`, requestOptions)
             .then((response) => response.json())
             .then(result => {
-                alert("สมัครสินเชื่อเรียบร้อยแล้ว")
-                resetForm()
+                alert(Approval === 'APPROVE' ? "อนุมัติสินเชื่อสำเร็จ" : "ปฏิเสธสินเชื่อสำเร็จ")
                 navigate('/item')
             })
             .catch(err => {
                 console.error(err)
-                alert("สมัครไม่สำเร็จ")
+                alert(err.message)
             })
-
     };
 
 
@@ -118,8 +116,9 @@ useEffect(() => {
     };
 
 
-    const [loanAmount, setLoanAmount] = React.useState("");   // แสดงผล: 10,000
+    const [loanAmount, setLoanAmount] = React.useState("");   // แสดงผล: 10,000loanAmountApprove
     const [loanAmountRaw, setLoanAmountRaw] = React.useState(0); // ค่าจริง: 10000
+
     const loanAmountChange = (e) => {
         const input = e.target.value;
         const raw2 = input.replace(/,/g, "");
@@ -132,8 +131,25 @@ useEffect(() => {
         );
     };
 
+    const [loanApprove, setLoanApprove] = React.useState(0);
+    const [DisplayloanApprove, setDisplayLoanApprove] = React.useState();
+    const [Detail, setDetail] = React.useState(""); //
+    const loanApproveChange = (e) => {
+        const input = e.target.value;
+        const raw3 = input.replace(/,/g, "");
+        if (!/^\d*$/.test(raw3)) return;
+        // ค่าจริง (ไว้คำนวณ)
+        setLoanApprove(raw3 === "" ? 0 : Number(raw3));
+        // ค่าแสดงผล (ใส่ ,)
+        setDisplayLoanApprove(
+            raw3 === "" ? "" : Number(raw3).toLocaleString("en-US")
+        );
+    };
+
     //เกณการอนุมัติ
-    const isPassed = loanAmountRaw <= monthlyIncomeRaw * 4;
+
+    const isPassed = loanApprove <= monthlyIncome * 3;
+    const maxloanApprove = (monthlyIncome * 3).toLocaleString("en-US");
     const amountMaxDisplay = (monthlyIncomeRaw * 4).toLocaleString("en-US");
 
     return (
@@ -146,22 +162,22 @@ useEffect(() => {
 
 
                     <div>
-                        <div className="grid grid-cols-2 gap-2" >
-                       
+                        <form className="grid grid-cols-2 gap-2" onSubmit={Submit}>
+
                             <div className=" col-span-2 ">
                                 <label className="text-sm font-medium text-gray-700 ">
                                     รหัสลูกค้า
                                 </label>
                                 <input
-                                  disabled
+                                    disabled
                                     value={customerId}
                                     onChange={(e) => setCustomerId(e.target.value.replace(/\D/g, ""))}
                                     type="text"
                                     placeholder=""
                                     maxlength="6"
                                     required
-                                    className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${errors.customerId ? "border-red-500" : "border-gray-300"}`}
-                                />
+                                    className="mt-2 w-full rounded-md border px-3 py-2 text-sm  border-gray-300" />
+
                                 <label className={`text-xs font-medium  ${errors.customerId ? "text-red-500" : "text-gray-500"}`}>
                                     รหัสลูกค้า 6 หลัก (ตัวอย่าง: 000001)
                                 </label>
@@ -172,15 +188,15 @@ useEffect(() => {
                                     เลขบัตรประชาชน
                                 </label>
                                 <input
-                                disabled
+                                    disabled
                                     value={idCard}
                                     onChange={(e) => setIdCard(e.target.value.replace(/\D/g, ""))}
                                     type="text"
                                     placeholder=""
                                     maxlength="13"
                                     required
-                                    className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${errors.idCard ? "border-red-500" : "border-gray-300"}`}
-                                />
+                                    className="mt-2 w-full rounded-md border px-3 py-2 text-sm  border-gray-300" />
+
                                 <label className={`text-xs font-medium ${errors.idCard ? "text-red-500" : "text-gray-500"}`}>
                                     เลขบัตรประชาชน 13 หลัก
                                 </label>
@@ -191,7 +207,7 @@ useEffect(() => {
                                     ชื่อ
                                 </label>
                                 <input
-                                disabled
+                                    disabled
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value.replace(/[^a-zA-Zก-๙]/g, ""))}
@@ -205,7 +221,7 @@ useEffect(() => {
                                     สกุล
                                 </label>
                                 <input
-                                disabled
+                                    disabled
                                     type="text"
                                     value={lastname}
                                     onChange={(e) => setLastname(e.target.value.replace(/[^a-zA-Zก-๙]/g, ""))}
@@ -219,7 +235,7 @@ useEffect(() => {
                                     รายได้ต่อเดือน (บาท)
                                 </label>
                                 <input
-                                disabled
+                                    disabled
                                     type="text"
                                     placeholder="0"
                                     value={monthlyIncome}
@@ -236,17 +252,17 @@ useEffect(() => {
                                     วงเงินที่ขอกู้ (บาท)
                                 </label>
                                 <input
-                                disabled
+                                    disabled
                                     tppe="text"
                                     value={loanAmount}
                                     onChange={loanAmountChange}
                                     placeholder="0"
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-base  border-gray-300" />
-                                <label className="text-xs font-medium text-gray-500">
-                                    วงเงินกู้สูงสุด: กรุณากรอกรายได้ก่อน
-                                </label>
+
                             </div>
+
+
 
                             <div className="col-span-2 mt-4">
                                 {/* กล่องสรุปผล */}
@@ -268,18 +284,37 @@ useEffect(() => {
 
                                         <div className="flex justify-between border-b pb-1">
                                             <span>วงเงินสูงสุดที่อนุมัติได้</span>
-                                            <span className="font-medium">{amountMaxDisplay} บาท</span>
+                                            <span className="font-medium">{maxloanApprove} บาท</span>
                                         </div>
+
+                                        <div className="flex justify-between border-b pb-1">
+                                            <span>วงเงินที่อนุมัติ</span>
+                                            <span className="font-medium">{Statuss !== 'PENDING' ? approved_amount : DisplayloanApprove} บาท</span>
+                                        </div>
+
 
                                         <div className="flex justify-between pt-2">
                                             <span className="font-medium">สถานะ:</span>
-                                            <span
+
+
+                                            <span style={{ display: Statuss == 'PENDING' ? 'block' :  'none'}}
                                                 className={`flex items-center gap-1 font-medium ${isPassed ? "text-green-600" : "text-red-600"
                                                     }`}
                                             >  {isPassed
                                                 ? "✅ ผ่านเกณฑ์การพิจารณา"
                                                 : "❌ ไม่ผ่านเกณฑ์การพิจารณา"}
                                             </span>
+
+                                            <span style={{ display: Statuss !== 'PENDING' ? 'block' :  'none'}}
+                                                className={`flex items-center gap-1 font-medium ${Statuss == 'APPROVE' ? "text-green-600" : "text-red-600"
+                                                    }`}
+                                            > 
+                                            {Statuss}
+
+                                            </span>
+
+
+
                                         </div>
                                     </div>
                                 </div>
@@ -288,26 +323,72 @@ useEffect(() => {
                                 <div className=" mt-4 flex items-start gap-2 rounded-md bg-gray-100 p-3 border-l-4 border-green-500">
                                     <span className="text-sm font-medium">หมายเหตุ:</span>
                                     <span className="text-sm text-gray-700">
-                                        วงเงินกู้อยู่ภายใต้เกณฑ์ 4 เท่าของรายได้ต่อเดือน
+                                        วงเงินกู้อยู่ภายใต้เกณฑ์ไม่เกิน 3 เท่าของรายได้ต่อเดือน
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="col-span-2 mt-4">
+                            <div className=" col-span-2 mt-4">
+                                <label className=" text-sm font-medium text-gray-700">
+                                    วงเงินที่อนุมัติ
+                                </label>
+                                <input
+                                    disabled={Statuss !== 'PENDING'}
+                                    type="text"
+                                    value={Statuss !== 'PENDING' ? approved_amount : DisplayloanApprove}
+                                    onChange={loanApproveChange}
+                                    placeholder="0"
+                                    required
+                                    className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${!isPassed ? "border-red-500" : "border-gray-300"}`} />
+
+
+                            </div>
+
+                            <div className=" col-span-2">
+                                <label className=" text-sm font-medium text-gray-700">
+                                    รายละเอียดการอนุมัติ
+                                </label>
+                                <input
+                                    disabled={Statuss !== 'PENDING'}
+                                    type="text"
+                                    value={Statuss !== 'PENDING'? reason_codes : Detail}
+                                    onChange={(e) => setDetail(e.target.value)}
+                                    placeholder="ระบุรายละเอียด"
+                                    required
+                                    className="mt-2 w-full rounded-md border px-3 py-2 text-base  border-gray-300" />
+
+                            </div>
+
+
+                            <div className="col-span-2 mt-4" style={{ display: Statuss == 'PENDING' ? 'block' :  'none'}}>
+                                <div className="flex gap-2">
+                                    <button onClick={() => { setApproval('APPROVE'); Submit() }} disabled={!isPassed} type="submit" className={`w-full rounded-md py-3 text-sm font-medium ${isPassed ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                                    >
+                                        APPROVE
+                                    </button>
+                                    <button type="submit" onClick={() => setApproval('REJECTED')} className="w-full rounded-md border border-gray-300 bg-white py-3 text-sm font-medium text-gray-700 hover:bg-gray-100" >
+                                        REJECTED
+                                    </button>
+                                </div>
+                            </div>
+</form>
+
+                            <div className="col-span-2 mt-4" style={{ display: Statuss !== 'PENDING' ? 'block': 'none'  }}>
                                 <div className="flex gap-2">
 
-                                    <button  onClick={() => navigate("/Item")}   className="w-full rounded-md border border-gray-300 bg-white py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                                    >
+                                    <button onClick={() => navigate('/Item')} className="w-full rounded-md border border-gray-300 bg-white py-3 text-sm font-medium text-gray-700 hover:bg-gray-100" >
                                         กลับ
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
+                        
+                    </div>
                 </div>
+
             </div>
         </div>
+
     )
 }
 
