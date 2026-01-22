@@ -10,17 +10,13 @@ const decisionColor = {
   PENDING: 'text-yellow-500',
 };
 
-
-const requestOptions = {
-  method: "GET",
-  redirect: "follow"
-};
 useEffect(() => {
   fetch("http://localhost:3000/api/loans")
     .then(res => res.json())
     .then(data => setResult(data))
-    .catch(err => console.error(err))
+    .catch(err => console.error(err));
 }, []);
+ 
 
 console.log(result);
   
@@ -79,21 +75,6 @@ console.log(result);
                 </div>
 
             </div>
-
-
-            <footer class="bg-gray-800 text-gray-300 mt-2">
-                <div class="mx-auto max-w-6xl px-4 py-4 flex flex-col md:flex-row items-center justify-between">
-                    <p class="text-sm">
-                        © 2026 Your Company. All rights reserved.
-                    </p>
-
-                    <div class="flex gap-4 text-sm mt-4 md:mt-0">
-                        <a href="#" class="hover:text-white">Privacy</a>
-                        <a href="#" class="hover:text-white">Terms</a>
-                        <a href="#" class="hover:text-white">Contact</a>
-                    </div>
-                </div>
-            </footer>
 
 
         </div>

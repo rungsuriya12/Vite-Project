@@ -1,36 +1,40 @@
 import React from 'react'
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Item from './Item';
 import { useNavigate } from "react-router-dom";
 
 function View() {
+
     const [Approval, setApproval] = useState(null);
     const navigate = useNavigate();
     const [result, setResult] = useState(null);
     const { id } = useParams();
-    console.log(result);
-
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    const raw = "";
-
-    const requestOptions = {
-        method: "GET",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
+    const [approved_amount, setApprovedAmount] = useState("");
+    const [reason_codes, setReasonCodes] = useState("");
+    const [Statuss, setStatuss] = useState("");
+    const [customerId, setCustomerId] = useState("");
+    const [idCard, setIdCard] = useState("");
+    const [name, setName] = useState("");
+    const [lastname, setLastname] = useState("");
+    const [MonthlyIncomeRaw, setMonthlyIncomeRaw] = useState("");
+    const [MonthlyIncome, setMonthlyIncome] = useState("");
+    const [errors, setErrors] = useState({});
+    const [loanAmountRaw, setloanAmountRaw] = useState(0);
+    const [loanAmount, setloanAmount] = useState("");
+    const [Detail, setDetail] = useState("");
+    
+    const formatNumber = (num) => {
+        return Number(num).toLocaleString("en-US");
     };
+    
     useEffect(() => {
         if (!id) return;
-
         fetch(`http://localhost:3000/api/loans/${id}`)
             .then(res => res.json())
             .then(result => setResult(result))
             .catch(err => console.error(err));
     }, [id]);
-
+    //console.log(result);
 
     useEffect(() => {
         if (!result) return;
@@ -39,54 +43,17 @@ function View() {
         setIdCard(result.citizen_id);
         setName(result.name);
         setLastname(result.lastname);
-        setLoanAmount(result.loan_amount);
-        setLoanAmountRaw(result.loan_amount);
-        setMonthlyIncome(result.monthly_income);
-        setMonthlyIncomeRaw(result.monthly_income);
+        setloanAmountRaw(Number(result.loan_amount) || 0);
+        setMonthlyIncomeRaw(Number(result.monthly_income) || 0);
+        setloanAmount(formatNumber(result.loan_amount));
+        setMonthlyIncome(formatNumber(result.monthly_income));
         setStatuss(result.decision);
         setApprovedAmount(result.approved_amount);
         setReasonCodes(result.reason_codes);
     }, [result]);
-    const [approved_amount, setApprovedAmount] = React.useState("");
-    const [reason_codes, setReasonCodes] = React.useState("");
-
-    const [Statuss, setStatuss] = React.useState("");
-    const [customerId, setCustomerId] = React.useState("");
-    const [idCard, setIdCard] = React.useState("");
-    const [name, setName] = React.useState("");
-    const [lastname, setLastname] = React.useState("");
-    const [errors, setErrors] = React.useState({});
-
-    //loanApprove
-    //Detail
-    //Approval
 
     const Submit = (e) => {
-
-
-        e.preventDefault();
-        const newErrors = {};
-        setErrors(newErrors);
-
-        // ❌ มี error → หยุด
-        if (Object.keys(newErrors).length > 0) return;
-
-        // ส่งข้อมูลไปยัง backend
-        const myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        const raw = JSON.stringify({
-            "decision": Approval,
-            "approved_amount": loanApprove,
-            "reason_codes": Detail
-        });
-
-        const requestOptions = {
-            method: "PUT",
-            headers: myHeaders,
-            body: raw,
-            redirect: "follow"
-        };
-
+        e.preventDefault();      // กันหน้า refresh
         fetch(`http://localhost:3000/api/loans/${result.id[0]}`, requestOptions)
             .then((response) => response.json())
             .then(result => {
@@ -100,57 +67,28 @@ function View() {
     };
 
 
-    //console.log(errors.onlyLetters2);
-    const [monthlyIncome, setMonthlyIncome] = React.useState("");   // แสดงผล: 10,000
-    const [monthlyIncomeRaw, setMonthlyIncomeRaw] = React.useState(0); // ค่าจริง: 10000
-    const monthlyIncomeRawChange = (e) => {
+    const [loanApprove, setLoanApprove] = useState(0);
+    const [DisplayloanApprove, setDisplayLoanApprove] = useState();
+
+
+
+
+    const handleNumberWithComma = (e, setRaw, setDisplay) => {//รับค่าจาก even value 2 
         const input = e.target.value;
         const raw = input.replace(/,/g, "");
+
         if (!/^\d*$/.test(raw)) return;
-        // ค่าจริง (ไว้คำนวณ)
-        setMonthlyIncomeRaw(raw === "" ? 0 : Number(raw));
-        // ค่าแสดงผล (ใส่ ,)
-        setMonthlyIncome(
-            raw === "" ? "" : Number(raw).toLocaleString("en-US")
-        );
+
+        setRaw(raw === "" ? 0 : Number(raw));
+        setDisplay(raw === "" ? "" : Number(raw).toLocaleString("en-US"));
     };
 
-
-    const [loanAmount, setLoanAmount] = React.useState("");   // แสดงผล: 10,000loanAmountApprove
-    const [loanAmountRaw, setLoanAmountRaw] = React.useState(0); // ค่าจริง: 10000
-
-    const loanAmountChange = (e) => {
-        const input = e.target.value;
-        const raw2 = input.replace(/,/g, "");
-        if (!/^\d*$/.test(raw2)) return;
-        // ค่าจริง (ไว้คำนวณ)
-        setLoanAmountRaw(raw2 === "" ? 0 : Number(raw2));
-        // ค่าแสดงผล (ใส่ ,)
-        setLoanAmount(
-            raw2 === "" ? "" : Number(raw2).toLocaleString("en-US")
-        );
-    };
-
-    const [loanApprove, setLoanApprove] = React.useState(0);
-    const [DisplayloanApprove, setDisplayLoanApprove] = React.useState();
-    const [Detail, setDetail] = React.useState(""); //
-    const loanApproveChange = (e) => {
-        const input = e.target.value;
-        const raw3 = input.replace(/,/g, "");
-        if (!/^\d*$/.test(raw3)) return;
-        // ค่าจริง (ไว้คำนวณ)
-        setLoanApprove(raw3 === "" ? 0 : Number(raw3));
-        // ค่าแสดงผล (ใส่ ,)
-        setDisplayLoanApprove(
-            raw3 === "" ? "" : Number(raw3).toLocaleString("en-US")
-        );
-    };
 
     //เกณการอนุมัติ
 
-    const isPassed = loanApprove <= monthlyIncome * 3;
-    const maxloanApprove = (monthlyIncome * 3).toLocaleString("en-US");
-    const amountMaxDisplay = (monthlyIncomeRaw * 4).toLocaleString("en-US");
+    const isPassed = loanApprove <= MonthlyIncomeRaw * 3;
+    const maxloanApprove = (MonthlyIncomeRaw * 3).toLocaleString("en-US");
+    const amountMaxDisplay = (MonthlyIncomeRaw * 4).toLocaleString("en-US");
 
     return (
         <div class="min-h-screen bg-gray-50">
@@ -171,10 +109,10 @@ function View() {
                                 <input
                                     disabled
                                     value={customerId}
-                                    onChange={(e) => setCustomerId(e.target.value.replace(/\D/g, ""))}
+                                    
                                     type="text"
                                     placeholder=""
-                                    maxlength="6"
+                                    maxLength="6"
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-sm  border-gray-300" />
 
@@ -190,10 +128,10 @@ function View() {
                                 <input
                                     disabled
                                     value={idCard}
-                                    onChange={(e) => setIdCard(e.target.value.replace(/\D/g, ""))}
+                                    
                                     type="text"
                                     placeholder=""
-                                    maxlength="13"
+                                    maxLength="13"
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-sm  border-gray-300" />
 
@@ -210,7 +148,7 @@ function View() {
                                     disabled
                                     type="text"
                                     value={name}
-                                    onChange={(e) => setName(e.target.value.replace(/[^a-zA-Zก-๙]/g, ""))}
+                                   
                                     name="firstName"
                                     placeholder="กรอกชื่อ"
                                     required
@@ -224,7 +162,7 @@ function View() {
                                     disabled
                                     type="text"
                                     value={lastname}
-                                    onChange={(e) => setLastname(e.target.value.replace(/[^a-zA-Zก-๙]/g, ""))}
+                                   
                                     name="lastName"
                                     placeholder="กรอกนามสกุล"
                                     required
@@ -238,8 +176,7 @@ function View() {
                                     disabled
                                     type="text"
                                     placeholder="0"
-                                    value={monthlyIncome}
-                                    onChange={monthlyIncomeRawChange}
+                                    value={MonthlyIncome}
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-base  border-gray-300" />
                                 <label className="text-xs font-medium text-gray-500">
@@ -253,9 +190,8 @@ function View() {
                                 </label>
                                 <input
                                     disabled
-                                    tppe="text"
+                                    type="text"
                                     value={loanAmount}
-                                    onChange={loanAmountChange}
                                     placeholder="0"
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-base  border-gray-300" />
@@ -274,7 +210,7 @@ function View() {
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between border-b pb-1">
                                             <span>รายได้ต่อเดือน (บาท)</span>
-                                            <span className="font-medium" >{monthlyIncome} บาท</span>
+                                            <span className="font-medium" >{MonthlyIncome} บาท</span>
                                         </div>
 
                                         <div className="flex justify-between border-b pb-1">
@@ -284,7 +220,7 @@ function View() {
 
                                         <div className="flex justify-between border-b pb-1">
                                             <span>วงเงินสูงสุดที่อนุมัติได้</span>
-                                            <span className="font-medium">{maxloanApprove} บาท</span>
+                                            <span className="font-medium">{amountMaxDisplay} บาท</span>
                                         </div>
 
                                         <div className="flex justify-between border-b pb-1">
@@ -297,7 +233,7 @@ function View() {
                                             <span className="font-medium">สถานะ:</span>
 
 
-                                            <span style={{ display: Statuss == 'PENDING' ? 'block' :  'none'}}
+                                            <span style={{ display: Statuss == 'PENDING' ? 'block' : 'none' }}
                                                 className={`flex items-center gap-1 font-medium ${isPassed ? "text-green-600" : "text-red-600"
                                                     }`}
                                             >  {isPassed
@@ -305,11 +241,11 @@ function View() {
                                                 : "❌ ไม่ผ่านเกณฑ์การพิจารณา"}
                                             </span>
 
-                                            <span style={{ display: Statuss !== 'PENDING' ? 'block' :  'none'}}
+                                            <span style={{ display: Statuss !== 'PENDING' ? 'block' : 'none' }}
                                                 className={`flex items-center gap-1 font-medium ${Statuss == 'APPROVE' ? "text-green-600" : "text-red-600"
                                                     }`}
-                                            > 
-                                            {Statuss}
+                                            >
+                                                {Statuss}
 
                                             </span>
 
@@ -336,7 +272,9 @@ function View() {
                                     disabled={Statuss !== 'PENDING'}
                                     type="text"
                                     value={Statuss !== 'PENDING' ? approved_amount : DisplayloanApprove}
-                                    onChange={loanApproveChange}
+                                    onChange={(e) =>
+                                        handleNumberWithComma(e, setLoanApprove, setDisplayLoanApprove)
+                                    }
                                     placeholder="0"
                                     required
                                     className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${!isPassed ? "border-red-500" : "border-gray-300"}`} />
@@ -351,7 +289,7 @@ function View() {
                                 <input
                                     disabled={Statuss !== 'PENDING'}
                                     type="text"
-                                    value={Statuss !== 'PENDING'? reason_codes : Detail}
+                                    value={Statuss !== 'PENDING' ? reason_codes : Detail}
                                     onChange={(e) => setDetail(e.target.value)}
                                     placeholder="ระบุรายละเอียด"
                                     required
@@ -360,7 +298,7 @@ function View() {
                             </div>
 
 
-                            <div className="col-span-2 mt-4" style={{ display: Statuss == 'PENDING' ? 'block' :  'none'}}>
+                            <div className="col-span-2 mt-4" style={{ display: Statuss == 'PENDING' ? 'block' : 'none' }}>
                                 <div className="flex gap-2">
                                     <button onClick={() => { setApproval('APPROVE'); Submit() }} disabled={!isPassed} type="submit" className={`w-full rounded-md py-3 text-sm font-medium ${isPassed ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
                                     >
@@ -371,18 +309,18 @@ function View() {
                                     </button>
                                 </div>
                             </div>
-</form>
+                        </form>
 
-                            <div className="col-span-2 mt-4" style={{ display: Statuss !== 'PENDING' ? 'block': 'none'  }}>
-                                <div className="flex gap-2">
+                        <div className="col-span-2 mt-4" style={{ display: Statuss !== 'PENDING' ? 'block' : 'none' }}>
+                            <div className="flex gap-2">
 
-                                    <button onClick={() => navigate('/Item')} className="w-full rounded-md border border-gray-300 bg-white py-3 text-sm font-medium text-gray-700 hover:bg-gray-100" >
-                                        กลับ
-                                    </button>
-                                </div>
+                                <button onClick={() => navigate('/Item')} className="w-full rounded-md border border-gray-300 bg-white py-3 text-sm font-medium text-gray-700 hover:bg-gray-100" >
+                                    กลับ
+                                </button>
                             </div>
+                        </div>
 
-                        
+
                     </div>
                 </div>
 

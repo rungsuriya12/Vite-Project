@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navber from './src/View/Navbar';
 import Item from './src/View/Item';
@@ -14,7 +13,7 @@ function App() {
         <Route path="/Item" element={<Item />} />
         <Route path="/AddItem" element={<AddItem />} />
         <Route path="/View/:id" element={<View />} />
-        <Route path="*" element={<h1>404 Not Found</h1>} />
+        <Route path="*"element={<div className="flex items-center justify-center h-screen"><h1 className="text-4xl font-bold">404 Not Found</h1></div>  }/>
       </Routes>
 
     </BrowserRouter>

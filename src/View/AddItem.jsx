@@ -1,5 +1,5 @@
 import React from 'react'
-import useState from 'react'
+import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
 function AddItem() {
@@ -16,11 +16,30 @@ function AddItem() {
         setErrors({});
     };
 
-    const [customerId, setCustomerId] = React.useState("");
-    const [idCard, setIdCard] = React.useState("");
-    const [name, setName] = React.useState("");
-    const [lastname, setLastname] = React.useState("");
-    const [errors, setErrors] = React.useState({});
+    const [customerId, setCustomerId] = useState("");
+    const [idCard, setIdCard] = useState("");
+    const [name, setName] = useState("");
+    const [lastname, setLastname] = useState("");
+    const [errors, setErrors] = useState({});
+    const [monthlyIncome, setMonthlyIncome] = useState("");   // แสดงผล: 10,000
+    const [monthlyIncomeRaw, setMonthlyIncomeRaw] = useState(0); // ค่าจริง: 10000
+    const [loanAmount, setLoanAmount] = useState("");   // แสดงผล: 10,000
+    const [loanAmountRaw, setLoanAmountRaw] = useState(0); // ค่าจริง: 10000
+
+    const handleNumberWithComma = (e, setRaw, setDisplay) => {//รับค่าจาก even value 2 
+        const input = e.target.value;
+        const raw = input.replace(/,/g, "");
+
+        if (!/^\d*$/.test(raw)) return;
+
+        setRaw(raw === "" ? 0 : Number(raw));
+        setDisplay(raw === "" ? "" : Number(raw).toLocaleString("en-US"));
+    };
+
+
+    //เกณการอนุมัติ
+    const isPassed = loanAmountRaw <= monthlyIncomeRaw * 4;
+    const amountMaxDisplay = (monthlyIncomeRaw * 4).toLocaleString("en-US");
 
     const Submit = (e) => {
         e.preventDefault();
@@ -83,46 +102,12 @@ function AddItem() {
 
                 if (err.message === "DUPLICATE") {
                     alert("ข้อมูลซ้ำ ไม่สามารถบันทึกได้");
-                } 
+                }
             });
 
 
     };
 
-
-    //console.log(errors.onlyLetters2);
-    const [monthlyIncome, setMonthlyIncome] = React.useState("");   // แสดงผล: 10,000
-    const [monthlyIncomeRaw, setMonthlyIncomeRaw] = React.useState(0); // ค่าจริง: 10000
-    const monthlyIncomeRawChange = (e) => {
-        const input = e.target.value;
-        const raw = input.replace(/,/g, "");
-        if (!/^\d*$/.test(raw)) return;
-        // ค่าจริง (ไว้คำนวณ)
-        setMonthlyIncomeRaw(raw === "" ? 0 : Number(raw));
-        // ค่าแสดงผล (ใส่ ,)
-        setMonthlyIncome(
-            raw === "" ? "" : Number(raw).toLocaleString("en-US")
-        );
-    };
-
-
-    const [loanAmount, setLoanAmount] = React.useState("");   // แสดงผล: 10,000
-    const [loanAmountRaw, setLoanAmountRaw] = React.useState(0); // ค่าจริง: 10000
-    const loanAmountChange = (e) => {
-        const input = e.target.value;
-        const raw2 = input.replace(/,/g, "");
-        if (!/^\d*$/.test(raw2)) return;
-        // ค่าจริง (ไว้คำนวณ)
-        setLoanAmountRaw(raw2 === "" ? 0 : Number(raw2));
-        // ค่าแสดงผล (ใส่ ,)
-        setLoanAmount(
-            raw2 === "" ? "" : Number(raw2).toLocaleString("en-US")
-        );
-    };
-
-    //เกณการอนุมัติ
-    const isPassed = loanAmountRaw <= monthlyIncomeRaw * 4;
-    const amountMaxDisplay = (monthlyIncomeRaw * 4).toLocaleString("en-US");
 
     return (
         <div class="min-h-screen bg-gray-50">
@@ -206,7 +191,9 @@ function AddItem() {
                                     type="text"
                                     placeholder="0"
                                     value={monthlyIncome}
-                                    onChange={monthlyIncomeRawChange}
+                                    onChange={(e) =>
+                                        handleNumberWithComma(e, setMonthlyIncomeRaw, setMonthlyIncome)
+                                    }
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-base  border-gray-300" />
                                 <label className="text-xs font-medium text-gray-500">
@@ -221,7 +208,9 @@ function AddItem() {
                                 <input
                                     tppe="text"
                                     value={loanAmount}
-                                    onChange={loanAmountChange}
+                                    onChange={(e) =>
+                                        handleNumberWithComma(e, setLoanAmountRaw, setLoanAmount)
+                                    }
                                     placeholder="0"
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-base  border-gray-300" />
