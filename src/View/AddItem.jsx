@@ -110,8 +110,8 @@ function AddItem() {
 
 
     return (
-        <div class="min-h-screen bg-gray-50">
-            <div class="mx-auto max-w-6xl p-8 bg-white pt-20 min-h-screen ">
+        <div className="min-h-screen bg-gray-50">
+            <div className="mx-auto max-w-6xl p-8 bg-white pt-20 min-h-screen ">
                 <div>
                     <h1 className="text-lg "> สมัครขอสินเชื่อ</h1>
                     <p className="text-sm text-gray-700"> กรอกข้อมูลเพื่อสมัครขอสินเชื่อ</p>
@@ -130,7 +130,7 @@ function AddItem() {
                                     onChange={(e) => setCustomerId(e.target.value.replace(/\D/g, ""))}
                                     type="text"
                                     placeholder=""
-                                    maxlength="6"
+                                    maxLength="6"
                                     required
                                     className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${errors.customerId ? "border-red-500" : "border-gray-300"}`}
                                 />
@@ -148,7 +148,7 @@ function AddItem() {
                                     onChange={(e) => setIdCard(e.target.value.replace(/\D/g, ""))}
                                     type="text"
                                     placeholder=""
-                                    maxlength="13"
+                                    maxLength="13"
                                     required
                                     className={`mt-2 w-full rounded-md border px-3 py-2 text-sm ${errors.idCard ? "border-red-500" : "border-gray-300"}`}
                                 />

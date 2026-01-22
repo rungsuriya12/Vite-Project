@@ -13,7 +13,10 @@ const decisionColor = {
 useEffect(() => {
   fetch("http://localhost:3000/api/loans")
     .then(res => res.json())
-    .then(data => setResult(data))
+    .then(data => {
+      const sorted = data.sort((a, b) => b.id[0] - a.id[0]);
+      setResult(sorted);
+    })
     .catch(err => console.error(err));
 }, []);
  
@@ -23,8 +26,8 @@ console.log(result);
     const navigate = useNavigate();
 
     return (
-        <div class="min-h-screen bg-gray-50">
-            <div class="mx-auto max-w-6xl px-4 bg-white pt-20 min-h-215">
+        <div className="min-h-screen bg-gray-50">
+            <div className="mx-auto max-w-6xl px-4 bg-white pt-20 min-h-215">
 
                 <h1 className="text-lg "> รายการขอสินเชื่อ</h1>
                 <hr className="my-3" />

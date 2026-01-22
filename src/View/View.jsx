@@ -5,28 +5,25 @@ import { useNavigate } from "react-router-dom";
 
 function View() {
 
-    const [Approval, setApproval] = useState(null);
+    const [Approval, setApproval] = useState("");
     const navigate = useNavigate();
     const [result, setResult] = useState(null);
     const { id } = useParams();
     const [approved_amount, setApprovedAmount] = useState("");
     const [reason_codes, setReasonCodes] = useState("");
     const [Statuss, setStatuss] = useState("");
-    const [customerId, setCustomerId] = useState("");
-    const [idCard, setIdCard] = useState("");
-    const [name, setName] = useState("");
-    const [lastname, setLastname] = useState("");
     const [MonthlyIncomeRaw, setMonthlyIncomeRaw] = useState("");
     const [MonthlyIncome, setMonthlyIncome] = useState("");
-    const [errors, setErrors] = useState({});
-    const [loanAmountRaw, setloanAmountRaw] = useState(0);
     const [loanAmount, setloanAmount] = useState("");
     const [Detail, setDetail] = useState("");
-    
-    const formatNumber = (num) => {
-        return Number(num).toLocaleString("en-US");
-    };
-    
+
+    const [loanApprove, setLoanApprove] = useState(0);
+    const [DisplayloanApprove, setDisplayLoanApprove] = useState("");
+    //เกณการอนุมัติ
+    const isPassed = loanApprove <= MonthlyIncomeRaw * 3;
+    const amountMaxDisplay = (MonthlyIncomeRaw * 4).toLocaleString("en-US");
+
+
     useEffect(() => {
         if (!id) return;
         fetch(`http://localhost:3000/api/loans/${id}`)
@@ -36,14 +33,12 @@ function View() {
     }, [id]);
     //console.log(result);
 
+    const formatNumber = (num) => {
+        return Number(num).toLocaleString("en-US");
+    };
     useEffect(() => {
         if (!result) return;
 
-        setCustomerId(result.user_id);
-        setIdCard(result.citizen_id);
-        setName(result.name);
-        setLastname(result.lastname);
-        setloanAmountRaw(Number(result.loan_amount) || 0);
         setMonthlyIncomeRaw(Number(result.monthly_income) || 0);
         setloanAmount(formatNumber(result.loan_amount));
         setMonthlyIncome(formatNumber(result.monthly_income));
@@ -53,7 +48,23 @@ function View() {
     }, [result]);
 
     const Submit = (e) => {
-        e.preventDefault();      // กันหน้า refresh
+        if (e) e.preventDefault();      // กันหน้า refresh
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+            "decision": Approval,
+            "approved_amount": loanApprove,
+            "reason_codes": Detail
+        });
+
+        const requestOptions = {
+            method: "PUT",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
+        };
+
         fetch(`http://localhost:3000/api/loans/${result.id[0]}`, requestOptions)
             .then((response) => response.json())
             .then(result => {
@@ -66,33 +77,16 @@ function View() {
             })
     };
 
-
-    const [loanApprove, setLoanApprove] = useState(0);
-    const [DisplayloanApprove, setDisplayLoanApprove] = useState();
-
-
-
-
     const handleNumberWithComma = (e, setRaw, setDisplay) => {//รับค่าจาก even value 2 
         const input = e.target.value;
-        const raw = input.replace(/,/g, "");
-
-        if (!/^\d*$/.test(raw)) return;
+        const raw = input.replace(/\D/g, ""); // ลบทุกตัวที่ไม่ใช่ตัวเลข
 
         setRaw(raw === "" ? 0 : Number(raw));
         setDisplay(raw === "" ? "" : Number(raw).toLocaleString("en-US"));
     };
-
-
-    //เกณการอนุมัติ
-
-    const isPassed = loanApprove <= MonthlyIncomeRaw * 3;
-    const maxloanApprove = (MonthlyIncomeRaw * 3).toLocaleString("en-US");
-    const amountMaxDisplay = (MonthlyIncomeRaw * 4).toLocaleString("en-US");
-
     return (
-        <div class="min-h-screen bg-gray-50">
-            <div class="mx-auto max-w-6xl p-8 bg-white pt-20 min-h-screen ">
+        <div className="min-h-screen bg-gray-50">
+            <div className="mx-auto max-w-6xl p-8 bg-white pt-20 min-h-screen ">
                 <div>
                     <h1 className="text-lg "> สมัครขอสินเชื่อ</h1>
                     <p className="text-sm text-gray-700"> กรอกข้อมูลเพื่อสมัครขอสินเชื่อ</p>
@@ -108,15 +102,15 @@ function View() {
                                 </label>
                                 <input
                                     disabled
-                                    value={customerId}
-                                    
+                                    value={result?.user_id || ""}
+
                                     type="text"
                                     placeholder=""
                                     maxLength="6"
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-sm  border-gray-300" />
 
-                                <label className={`text-xs font-medium  ${errors.customerId ? "text-red-500" : "text-gray-500"}`}>
+                                <label className="text-xs font-medium text-gray-500">
                                     รหัสลูกค้า 6 หลัก (ตัวอย่าง: 000001)
                                 </label>
                             </div>
@@ -127,15 +121,15 @@ function View() {
                                 </label>
                                 <input
                                     disabled
-                                    value={idCard}
-                                    
+                                    value={result?.citizen_id || ""}
+
                                     type="text"
                                     placeholder=""
                                     maxLength="13"
                                     required
                                     className="mt-2 w-full rounded-md border px-3 py-2 text-sm  border-gray-300" />
 
-                                <label className={`text-xs font-medium ${errors.idCard ? "text-red-500" : "text-gray-500"}`}>
+                                <label className="text-xs font-medium text-gray-500">
                                     เลขบัตรประชาชน 13 หลัก
                                 </label>
                             </div>
@@ -147,8 +141,8 @@ function View() {
                                 <input
                                     disabled
                                     type="text"
-                                    value={name}
-                                   
+                                    value={result?.name || ""}
+
                                     name="firstName"
                                     placeholder="กรอกชื่อ"
                                     required
@@ -161,8 +155,8 @@ function View() {
                                 <input
                                     disabled
                                     type="text"
-                                    value={lastname}
-                                   
+                                    value={result?.lastname || ""}
+
                                     name="lastName"
                                     placeholder="กรอกนามสกุล"
                                     required
@@ -244,10 +238,7 @@ function View() {
                                             <span style={{ display: Statuss !== 'PENDING' ? 'block' : 'none' }}
                                                 className={`flex items-center gap-1 font-medium ${Statuss == 'APPROVE' ? "text-green-600" : "text-red-600"
                                                     }`}
-                                            >
-                                                {Statuss}
-
-                                            </span>
+                                            > {Statuss} </span>
 
 
 
@@ -271,7 +262,7 @@ function View() {
                                 <input
                                     disabled={Statuss !== 'PENDING'}
                                     type="text"
-                                    value={Statuss !== 'PENDING' ? approved_amount : DisplayloanApprove}
+                                    value={Statuss !== 'PENDING' ? approved_amount : DisplayloanApprove} //หากอนุมัติแล้วให้โชว์ approved_amount
                                     onChange={(e) =>
                                         handleNumberWithComma(e, setLoanApprove, setDisplayLoanApprove)
                                     }
@@ -300,7 +291,7 @@ function View() {
 
                             <div className="col-span-2 mt-4" style={{ display: Statuss == 'PENDING' ? 'block' : 'none' }}>
                                 <div className="flex gap-2">
-                                    <button onClick={() => { setApproval('APPROVE'); Submit() }} disabled={!isPassed} type="submit" className={`w-full rounded-md py-3 text-sm font-medium ${isPassed ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                                    <button type="submit" onClick={() => { setApproval('APPROVE');}} disabled={!isPassed} className={`w-full rounded-md py-3 text-sm font-medium ${isPassed ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
                                     >
                                         APPROVE
                                     </button>
